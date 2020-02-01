@@ -4,15 +4,25 @@
 namespace App\Controller;
 
 
+use Doctrine\Common\Annotations\AnnotationReader;
 use Doctrine\Persistence\ObjectManager;
 use JMS\Serializer\SerializationContext;
 use JMS\Serializer\SerializerBuilder;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
 
 class BaseController extends AbstractController
 {
 
+    private $passwordEncoder;
+
+    public function __construct(UserPasswordEncoderInterface $passwordEncoder)
+    {
+        $reader = new AnnotationReader();
+        AnnotationReader::addGlobalIgnoredName('alias');
+        $this->passwordEncoder = $passwordEncoder;
+    }
 
     /**
      * @return ObjectManager
@@ -20,6 +30,14 @@ class BaseController extends AbstractController
     protected function getEntityManager()
     {
         return $this->getDoctrine()->getManager();
+    }
+
+    /**
+     * @return UserPasswordEncoderInterface
+     */
+    protected function getPasswordEncoder()
+    {
+        return $this->passwordEncoder;
     }
 
     protected function createApiResponse($data, $statusCode = 200)
@@ -38,8 +56,6 @@ class BaseController extends AbstractController
         $context->setSerializeNull(true);
         return $serializer->serialize($data, "json", $context);
     }
-
-
 
 
 }

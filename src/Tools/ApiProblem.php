@@ -12,10 +12,12 @@ class ApiProblem
 
     const TYPE_VALIDATION_ERROR = "validation_error";
     const TYPE_INVALID_REQUEST_BODY_FORMAT = "invalid_body_format";
+    const TYPE_USER_EXISTED = "user_existed";
 
     private static $titles = [
         self::TYPE_VALIDATION_ERROR => "There was a validation error",
         self::TYPE_INVALID_REQUEST_BODY_FORMAT => "Invalid JSON format sent",
+        self::TYPE_USER_EXISTED => "User with this email/username existed",
     ];
 
     private $statusCode;

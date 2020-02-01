@@ -88,9 +88,8 @@
     },
     "repositories": {
         "phpunit-bridge": {
-            "options": {"symlink": false},
             "type": "path",
-            "url": "F:\\to-do-list\\app\\vendor\\symfony\\phpunit-bridge"
+            "url": "/application/vendor/symfony/phpunit-bridge"
         }
     }
 }

@@ -1,0 +1,29 @@
+
+security:
+  encoders:
+    App\Entity\User\User:
+      algorithm: bcrypt
+  providers:
+    users:
+      entity:
+        class: App\Entity\User\User
+  # ...
+  firewalls:
+    api:
+      pattern: ^/api/
+      guard:
+        authenticators:
+          - App\Security\TokenAuthenticator
+    user:
+      pattern: ^/user/
+      anonymous: true
+      guard:
+        authenticators:
+          - App\Security\UserAuthenticator
+    main:
+      pattern: ^/
+      anonymous: true
+  access_control:
+    - { path: '^/api', roles: ROLE_USER }
+    - { path: '^/user', roles: IS_AUTHENTICATED_ANONYMOUSLY }
+    - { path: '^/', roles: IS_AUTHENTICATED_ANONYMOUSLY }

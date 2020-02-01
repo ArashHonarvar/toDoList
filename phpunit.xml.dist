@@ -18,7 +18,7 @@
         <ini name="error_reporting" value="-1" />
         <server name="SHELL_VERBOSITY" value="-1" />
         <server name="KERNEL_CLASS" value="App\Kernel"/>
-        <env name="TEST_BASE_URI" value="http://127.0.0.1:8000"/>
+        <env name="TEST_BASE_URI" value="http://webserver"/>
         <env name="SYMFONY_DEPRECATIONS_HELPER" value="weak" />
     </php>
 

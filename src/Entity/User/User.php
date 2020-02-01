@@ -5,6 +5,7 @@ namespace App\Entity\User;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Gedmo\Mapping\Annotation as Gedmo;
+use Symfony\Component\Validator\Constraints as Assert;
 
 /**
  * @ORM\Entity(repositoryClass="App\Repository\User\UserRepository")
@@ -19,22 +20,25 @@ class User implements UserInterface
     private $id;
 
     /**
+     * @Assert\NotBlank(message="Please enter a username")
      * @ORM\Column(type="string", unique=true , length=191)
      */
     private $username;
 
     /**
+     * @Assert\NotBlank(message="Please enter an email address")
      * @ORM\Column(type="string", unique=true , length=191)
      */
     private $email;
 
     /**
+     * @Assert\NotBlank(message="Please enter a password")
      * @ORM\Column(type="string" , length=191)
      */
     private $password;
 
     /**
-     * @ORM\ManyToOne(targetEntity="App\Entity\User\ApiToken" , inversedBy="createdBy")
+     * @ORM\OneToMany(targetEntity="App\Entity\User\ApiToken" , mappedBy="createdBy")
      */
     private $tokens;
 
@@ -43,6 +47,11 @@ class User implements UserInterface
      * @Gedmo\Timestampable(on="create")
      */
     private $createdAt;
+
+    /**
+     * @ORM\Column(type="json")
+     */
+    private $roles = [];
 
     //    ***************** Auto Generated Functions **************
 
@@ -78,9 +87,13 @@ class User implements UserInterface
         $this->password = $password;
     }
 
-    public function getRoles()
+    public function getRoles(): array
     {
-        return array('ROLE_USER');
+        $roles = $this->roles;
+        // guarantee every user at least has ROLE_USER
+        $roles[] = 'ROLE_USER';
+
+        return array_unique($roles);
     }
 
     public function getSalt()
@@ -112,6 +125,13 @@ class User implements UserInterface
     public function setTokens(?ApiToken $tokens): self
     {
         $this->tokens = $tokens;
+
+        return $this;
+    }
+
+    public function setRoles(array $roles): self
+    {
+        $this->roles = $roles;
 
         return $this;
     }

@@ -15,6 +15,7 @@ use Psr\Http\Message\ResponseInterface;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Symfony\Component\Console\Helper\FormatterHelper;
 use Symfony\Component\Console\Output\ConsoleOutput;
+use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\DomCrawler\Crawler;
 use Symfony\Component\PropertyAccess\PropertyAccess;
 
@@ -71,18 +72,6 @@ class ApiTestCase extends KernelTestCase
     private function getService($id)
     {
         return self::$kernel->getContainer()->get($id);
-    }
-
-    protected function createUser($username, $plainPassword = "123")
-    {
-        $user = new User();
-        $user->setUsername($username);
-        $user->setEmail("arash.honarvar.1372@gmail.com");
-        $password = $this->getService('security.password_encoder')->encodePassword($user, $plainPassword);
-        $user->setPassword($password);
-        $this->getEntityManager()->persist($user);
-        $this->getEntityManager()->flush();
-        return $user;
     }
 
     protected function debugResponse(ResponseInterface $response)

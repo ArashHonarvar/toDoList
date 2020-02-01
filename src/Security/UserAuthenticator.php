@@ -10,19 +10,23 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
+use Symfony\Component\Security\Core\Encoder\UserPasswordEncoder;
+use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
 use Symfony\Component\Security\Core\Exception\AuthenticationException;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Security\Core\User\UserProviderInterface;
 use Symfony\Component\Security\Guard\AbstractGuardAuthenticator;
 
-class TokenAuthenticator extends AbstractGuardAuthenticator
+class UserAuthenticator extends AbstractGuardAuthenticator
 {
 
     private $entityManager;
+    private $passwordEncoder;
 
-    public function __construct(EntityManagerInterface $entityManager)
+    public function __construct(EntityManagerInterface $entityManager, UserPasswordEncoderInterface $passwordEncoder)
     {
         $this->entityManager = $entityManager;
+        $this->passwordEncoder = $passwordEncoder;
     }
 
     /**
@@ -32,7 +36,7 @@ class TokenAuthenticator extends AbstractGuardAuthenticator
      */
     public function supports(Request $request)
     {
-        return $request->headers->has('AUTH-ACCESS-TOKEN') || $request->headers->has('AUTH-REFRESH-TOKEN') ? true : false;
+        return "api_user_register" == $request->attributes->get('_route') ? false : true;
     }
 
     /**
@@ -42,23 +46,20 @@ class TokenAuthenticator extends AbstractGuardAuthenticator
     public function getCredentials(Request $request)
     {
         return [
-            'access-token' => $request->headers->get('AUTH-ACCESS-TOKEN'),
-            'refresh-token' => $request->headers->get('AUTH-REFRESH-TOKEN'),
+            'username' => $request->headers->get('AUTH-USERNAME'),
+            'password' => $request->headers->get('AUTH-PASSWORD'),
         ];
     }
 
     public function getUser($credentials, UserProviderInterface $userProvider)
     {
-        $apiAccessToken = $credentials['access-token'];
-        $apiRefreshToken = $credentials['refresh-token'];
-
-        if (null === $credentials['access-token'] || null === $credentials['refresh-token']) {
+        if (null === $credentials['username'] || null === $credentials['password']) {
             return;
         }
 
         // if a User object, checkCredentials() is called
         return $this->entityManager->getRepository(User::class)
-            ->findUserByCredentials($credentials);
+            ->findOneBy(['username' => $credentials['username']]);
     }
 
     public function checkCredentials($credentials, UserInterface $user)
@@ -67,7 +68,12 @@ class TokenAuthenticator extends AbstractGuardAuthenticator
         // no credential check is needed in this case
 
         // return true to cause authentication success
-        return true;
+        $encodedPassword = $this->passwordEncoder->encodePassword($user, $credentials['password']);
+        if ($user->getPassword() != $encodedPassword) {
+            return false;
+        } else {
+            return true;
+        }
     }
 
     public function onAuthenticationSuccess(Request $request, TokenInterface $token, $providerKey)

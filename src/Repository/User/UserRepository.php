@@ -19,6 +19,35 @@ class UserRepository extends ServiceEntityRepository
         parent::__construct($registry, User::class);
     }
 
+    /**
+     * //  * @return User
+     * //
+     */
+    public function findUserByCredentials($credentials)
+    {
+        return $this->createQueryBuilder('user')
+            ->select('user')
+            ->join('user.tokens', 'tokens')
+            ->where('tokens.accessToken = :accessToken')
+            ->orWhere('tokens.refreshToken = :refreshToken')
+            ->setParameter('accessToken', $credentials['access-token'])
+            ->setParameter('refreshToken', $credentials['refresh-token'])->getQuery()->setMaxResults(1)->getOneOrNullResult();
+    }
+
+    /**
+     * //  * @return User
+     * //
+     */
+    public function findUserByUsernameOrEmail($data)
+    {
+        return $this->createQueryBuilder('user')
+            ->select('user')
+            ->where('user.username = :username')
+            ->orWhere('user.email = :email')
+            ->setParameter('username', $data['username'])
+            ->setParameter('email', $data['email'])->getQuery()->setMaxResults(1)->getOneOrNullResult();
+    }
+
     // /**
     //  * @return User[] Returns an array of User objects
     //  */

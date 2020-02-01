@@ -35,7 +35,7 @@ class ApiExceptionSubscriber implements EventSubscriberInterface
     {
         $request = $event->getRequest();
 
-        if (strpos($request->getPathInfo(), '/api') !== 0) {
+        if (strpos($request->getPathInfo(), '/api') !== 0 && (strpos($request->getPathInfo(), '/user') !== 0)) {
             return;
         }
 

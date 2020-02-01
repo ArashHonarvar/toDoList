@@ -20,19 +20,20 @@ class UserControllerTest extends ApiTestCase
     public function testRegister()
     {
         $data = [
-            'nickname' => 'Programmer',
-            'avatarNumber' => 2,
-            'tagLine' => 'A good Programmer'
+            'username' => 'Arash',
+            'email' => "arash.honarvar.1372@gmail.com",
+            'password' => '123'
         ];
 
 
         try {
-            $response = $this->client->post("/api/user/registers", [
+            $response = $this->client->post("/user/register", [
                 'body' => json_encode($data)
             ]);
         } catch (\Exception $e) {
             if ($e->hasResponse()) {
                 $response = $e->getResponse();
+//                dump($this->debugResponse($response)); // Body
                 dump((string)$response->getBody());
             }
         }
