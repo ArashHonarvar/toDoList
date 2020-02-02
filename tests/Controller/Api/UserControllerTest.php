@@ -38,6 +38,43 @@ class UserControllerTest extends ApiTestCase
             }
         }
 
+        $this->assertEquals(201, $response->getStatusCode());
+    }
+
+    public function testGenerateToken()
+    {
+
+        try {
+            $response = $this->client->post("/user/token/generate", [
+                'body' => json_encode([]),
+                'headers' => ['AUTH-USERNAME' => 'Arash', 'AUTH-PASSWORD' => '123']
+            ]);
+        } catch (\Exception $e) {
+            if ($e->hasResponse()) {
+                $response = $e->getResponse();
+//                dump($this->debugResponse($response)); // Body
+                dump((string)$response->getBody());
+            }
+        }
+
+        $this->assertEquals(201, $response->getStatusCode());
+    }
+
+    public function testShow()
+    {
+
+        try {
+            $response = $this->client->post("/user/show", [
+                'body' => json_encode([]),
+                'headers' => ['AUTH-USERNAME' => 'Arash', 'AUTH-PASSWORD' => '123']
+            ]);
+        } catch (\Exception $e) {
+            if ($e->hasResponse()) {
+                $response = $e->getResponse();
+//                dump($this->debugResponse($response)); // Body
+                dump((string)$response->getBody());
+            }
+        }
 
         $this->assertEquals(201, $response->getStatusCode());
     }

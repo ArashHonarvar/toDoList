@@ -19,6 +19,20 @@ class ApiTokenRepository extends ServiceEntityRepository
         parent::__construct($registry, ApiToken::class);
     }
 
+    /**
+     * //  * @return ApiToken
+     * //
+     */
+    public function findTokenByAccessOrRefreshToken($token)
+    {
+        return $this->createQueryBuilder('api_token')
+            ->select('api_token')
+            ->where('api_token.accessToken = :token')
+            ->orWhere('api_token.refreshToken = :token')
+            ->setParameter('token', $token)
+            ->getQuery()->setMaxResults(1)->getOneOrNullResult();
+    }
+
     // /**
     //  * @return ApiToken[] Returns an array of ApiToken objects
     //  */

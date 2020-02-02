@@ -13,6 +13,7 @@ use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Encoder\UserPasswordEncoder;
 use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
 use Symfony\Component\Security\Core\Exception\AuthenticationException;
+use Symfony\Component\Security\Core\Exception\CustomUserMessageAuthenticationException;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Security\Core\User\UserProviderInterface;
 use Symfony\Component\Security\Guard\AbstractGuardAuthenticator;
@@ -36,8 +37,7 @@ class UserAuthenticator extends AbstractGuardAuthenticator
      */
     public function supports(Request $request)
     {
-        return "api_user_register" == $request->attributes->get('_route') ? false : true;
-    }
+        return "api_user_register" == $request->attributes->get('_route') || "api_user_show_with_token"  == $request->attributes->get('_route') ? false : true;    }
 
     /**
      * Called on every request. Return whatever credentials you want to
@@ -54,7 +54,9 @@ class UserAuthenticator extends AbstractGuardAuthenticator
     public function getUser($credentials, UserProviderInterface $userProvider)
     {
         if (null === $credentials['username'] || null === $credentials['password']) {
-            return;
+            throw new CustomUserMessageAuthenticationException(
+                'Authentication Headers are missing'
+            );
         }
 
         // if a User object, checkCredentials() is called
@@ -68,12 +70,7 @@ class UserAuthenticator extends AbstractGuardAuthenticator
         // no credential check is needed in this case
 
         // return true to cause authentication success
-        $encodedPassword = $this->passwordEncoder->encodePassword($user, $credentials['password']);
-        if ($user->getPassword() != $encodedPassword) {
-            return false;
-        } else {
-            return true;
-        }
+        return $this->passwordEncoder->isPasswordValid($user, $credentials['password']);
     }
 
     public function onAuthenticationSuccess(Request $request, TokenInterface $token, $providerKey)

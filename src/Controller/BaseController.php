@@ -6,6 +6,8 @@ namespace App\Controller;
 
 use Doctrine\Common\Annotations\AnnotationReader;
 use Doctrine\Persistence\ObjectManager;
+use Hateoas\HateoasBuilder;
+use Hateoas\UrlGenerator\SymfonyUrlGenerator;
 use JMS\Serializer\SerializationContext;
 use JMS\Serializer\SerializerBuilder;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -54,7 +56,8 @@ class BaseController extends AbstractController
         $serializer = $serializebuilder->build();
         $context = new SerializationContext();
         $context->setSerializeNull(true);
-        return $serializer->serialize($data, "json", $context);
+        $hateoas = HateoasBuilder::create($serializebuilder)->build();
+        return $hateoas->serialize($data, "json", $context);
     }
 
 

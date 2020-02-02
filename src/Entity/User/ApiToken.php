@@ -4,9 +4,14 @@ namespace App\Entity\User;
 
 use Doctrine\ORM\Mapping as ORM;
 use Gedmo\Mapping\Annotation as Gedmo;
+use JMS\Serializer\Annotation as Serializer;
+use Hateoas\Configuration\Annotation as Hateoas;
+
 
 /**
+ * @Serializer\ExclusionPolicy("all")
  * @ORM\Entity(repositoryClass="App\Repository\User\ApiTokenRepository")
+ * @Hateoas\Relation("user", href = "expr('/user/show/' ~ object.getAccessToken())")
  */
 class ApiToken
 {
@@ -19,26 +24,31 @@ class ApiToken
 
     /**
      * @ORM\Column(type="string", length=100 , unique=true)
+     * @Serializer\Expose()
      */
     private $accessToken;
 
     /**
      * @ORM\Column(type="string", length=100 , unique=true)
+     * @Serializer\Expose()
      */
     private $refreshToken;
 
     /**
      * @ORM\Column(type="datetime")
+     * @Serializer\Expose()
      */
     private $expiredAt;
 
     /**
      * @ORM\Column(type="datetime")
      * @Gedmo\Timestampable(on="create")
+     * @Serializer\Expose()
      */
     private $createdAt;
 
     /**
+     *
      * @ORM\ManyToOne(targetEntity="App\Entity\User\User" , inversedBy="tokens")
      */
     private $createdBy;
@@ -47,6 +57,15 @@ class ApiToken
     {
         $this->accessToken = base_convert(sha1(uniqid(mt_rand(), true)), 16, 36);
         $this->refreshToken = base_convert(sha1(uniqid(mt_rand(), true)), 16, 36);
+    }
+
+    /**
+     * @return boolean
+     * @Serializer\VirtualProperty()
+     */
+    public function isExpired(): bool
+    {
+        return $this->getExpiredAt() <= new \DateTime();
     }
 
 

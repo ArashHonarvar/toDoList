@@ -32,7 +32,7 @@ class UserController extends BaseController
     {
         $user = new User();
         $form = $this->createForm(UserType::class, $user);
-        $this->processForm($request, $form, true);
+        $this->processForm($request, $form);
         if (!$form->isValid()) {
             $this->throwApiProblemValidationException($form);
         }
@@ -40,16 +40,38 @@ class UserController extends BaseController
         $user->setPassword($password);
         $this->getEntityManager()->persist($user);
         $this->getEntityManager()->flush();
-        $token = $this->createToken($user);
-//        $location = $this->generateUrl('app_api_programmers_show', [
-//            'nickname' => $programmer->getNickname()
-//        ]);
-        $response = $this->createApiResponse($token, 201);
-        $response->headers->set('location', "/test");
+        $response = $this->createApiResponse($user, 201);
         return $response;
     }
 
-    private function processForm(Request $request, FormInterface $form, $isAdd = false)
+
+    /**
+     * @Route("/token/generate", name="api_user_generate_token" , methods={"POST"})
+     */
+    public function generateTokenAction(Request $request)
+    {
+        $username = $request->headers->get('AUTH-USERNAME');
+        $user = $this->getEntityManager()->getRepository(User::class)->findOneBy(['username' => $username]);
+        $token = $this->createToken($user);
+        $response = $this->createApiResponse($token, 201);
+        return $response;
+    }
+
+    /**
+     * @Route("/show/{accessToken}", name="api_user_show_with_token" , methods={"GET"})
+     */
+    public function showWithAccessTokenAction($accessToken, Request $request)
+    {
+        $apiToken = $this->getEntityManager()->getRepository(ApiToken::class)->findOneBy(['accessToken' => $accessToken]);
+        $user = null;
+        if ($apiToken) {
+            $user = $apiToken->getCreatedBy();
+        }
+        $response = $this->createApiResponse($user);
+        return $response;
+    }
+
+    private function processForm(Request $request, FormInterface $form)
     {
         $body = $request->getContent();
         $data = json_decode($body, true);
@@ -60,17 +82,6 @@ class UserController extends BaseController
             );
 
             throw new ApiProblemException($apiProblem);
-        }
-        if ($isAdd == true) {
-            $existedUser = $this->getEntityManager()->getRepository(User::class)->findUserByUsernameOrEmail($data);
-            if (isset($existedUser)) {
-                $apiProblem = new ApiProblem(
-                    400,
-                    ApiProblem::TYPE_USER_EXISTED
-                );
-
-                throw new ApiProblemException($apiProblem);
-            }
         }
         $clearMissing = $request->getMethod() != 'PATCH';
         $form->submit($data, $clearMissing);
@@ -112,7 +123,9 @@ class UserController extends BaseController
         $apiToken = new ApiToken();
         $apiToken->setCreatedBy($user);
         $now = Carbon::instance(new \DateTime('now'));
-        $apiToken->setExpiredAt($now->addMonths(1));
+        $now->addMonths(1);
+        $expiredAt = $now->toDateTimeString();
+        $apiToken->setExpiredAt(new \DateTime($expiredAt));
         $this->getEntityManager()->persist($apiToken);
         $this->getEntityManager()->flush();
         return $apiToken;

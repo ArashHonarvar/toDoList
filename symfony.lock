@@ -141,6 +141,20 @@
     "jms/serializer": {
         "version": "3.4.0"
     },
+    "jms/serializer-bundle": {
+        "version": "3.0",
+        "recipe": {
+            "repo": "github.com/symfony/recipes-contrib",
+            "branch": "master",
+            "version": "3.0",
+            "ref": "384cec52df45f3bfd46a09930d6960a58872b268"
+        },
+        "files": [
+            "./config/packages/dev/jms_serializer.yaml",
+            "./config/packages/jms_serializer.yaml",
+            "./config/packages/prod/jms_serializer.yaml"
+        ]
+    },
     "nesbot/carbon": {
         "version": "2.29.1"
     },
@@ -420,6 +434,12 @@
     },
     "twig/twig": {
         "version": "v3.0.1"
+    },
+    "willdurand/hateoas": {
+        "version": "3.5.0"
+    },
+    "willdurand/hateoas-bundle": {
+        "version": "2.1.0"
     },
     "zendframework/zend-code": {
         "version": "3.4.1"

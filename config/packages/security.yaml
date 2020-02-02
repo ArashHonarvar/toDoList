@@ -14,6 +14,11 @@ security:
       guard:
         authenticators:
           - App\Security\TokenAuthenticator
+    apiToken:
+      pattern: ^/token/
+      guard:
+        authenticators:
+          - App\Security\TokenAuthenticator
     user:
       pattern: ^/user/
       anonymous: true
@@ -25,5 +30,6 @@ security:
       anonymous: true
   access_control:
     - { path: '^/api', roles: ROLE_USER }
+    - { path: '^/token', roles: ROLE_USER }
     - { path: '^/user', roles: IS_AUTHENTICATED_ANONYMOUSLY }
     - { path: '^/', roles: IS_AUTHENTICATED_ANONYMOUSLY }

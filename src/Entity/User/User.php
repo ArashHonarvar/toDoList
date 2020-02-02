@@ -6,9 +6,20 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Gedmo\Mapping\Annotation as Gedmo;
 use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
+use JMS\Serializer\Annotation as Serializer;
 
 /**
  * @ORM\Entity(repositoryClass="App\Repository\User\UserRepository")
+ * @UniqueEntity(
+ *     fields={"username"},
+ *     message="This username was taken before, choose another one."
+ * )
+ * @UniqueEntity(
+ *     fields={"email"},
+ *     message="This email was taken before, choose another one."
+ * )
+ * @Serializer\ExclusionPolicy("all")
  */
 class User implements UserInterface
 {
@@ -22,12 +33,14 @@ class User implements UserInterface
     /**
      * @Assert\NotBlank(message="Please enter a username")
      * @ORM\Column(type="string", unique=true , length=191)
+     * @Serializer\Expose()
      */
     private $username;
 
     /**
      * @Assert\NotBlank(message="Please enter an email address")
      * @ORM\Column(type="string", unique=true , length=191)
+     * @Serializer\Expose()
      */
     private $email;
 
@@ -45,6 +58,7 @@ class User implements UserInterface
     /**
      * @ORM\Column(type="datetime")
      * @Gedmo\Timestampable(on="create")
+     * @Serializer\Expose()
      */
     private $createdAt;
 
@@ -64,6 +78,7 @@ class User implements UserInterface
     {
         return $this->username;
     }
+
     public function setUsername($username)
     {
         $this->username = $username;
@@ -73,6 +88,7 @@ class User implements UserInterface
     {
         return $this->email;
     }
+
     public function setEmail($email)
     {
         $this->email = $email;
@@ -82,6 +98,7 @@ class User implements UserInterface
     {
         return $this->password;
     }
+
     public function setPassword($password)
     {
         $this->password = $password;

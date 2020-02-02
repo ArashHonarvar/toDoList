@@ -4,6 +4,7 @@
 namespace App\Security;
 
 
+use App\Entity\User\ApiToken;
 use App\Entity\User\User;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -11,6 +12,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Exception\AuthenticationException;
+use Symfony\Component\Security\Core\Exception\CustomUserMessageAuthenticationException;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Security\Core\User\UserProviderInterface;
 use Symfony\Component\Security\Guard\AbstractGuardAuthenticator;
@@ -32,7 +34,7 @@ class TokenAuthenticator extends AbstractGuardAuthenticator
      */
     public function supports(Request $request)
     {
-        return  true;
+        return "api_token_show_with_token" == $request->attributes->get('_route') ? false : true;
     }
 
     /**
@@ -42,8 +44,8 @@ class TokenAuthenticator extends AbstractGuardAuthenticator
     public function getCredentials(Request $request)
     {
         return [
-            'access-token' => $request->headers->has('AUTH-ACCESS-TOKEN') ? $request->headers->get('AUTH-ACCESS-TOKEN') : null,
-            'refresh-token' => $request->headers->has('AUTH-REFRESH-TOKEN') ? $request->headers->get('AUTH-REFRESH-TOKEN') : null,
+            'access-token' =>  $request->headers->get('AUTH-ACCESS-TOKEN'),
+            'refresh-token' => $request->headers->get('AUTH-REFRESH-TOKEN'),
         ];
     }
 
@@ -52,13 +54,31 @@ class TokenAuthenticator extends AbstractGuardAuthenticator
         $apiAccessToken = $credentials['access-token'];
         $apiRefreshToken = $credentials['refresh-token'];
 
-        if (null === $credentials['access-token'] && null === $credentials['refresh-token']) {
-            return;
+        if (null === $apiAccessToken && null === $apiRefreshToken) {
+            throw new CustomUserMessageAuthenticationException(
+                'Authentication Headers are missing'
+            );
+        }
+
+        if (isset($apiAccessToken)) {
+            $token = $this->entityManager->getRepository(ApiToken::class)->findOneBy(['accessToken' => $apiAccessToken]);
+        } else {
+            $token = $this->entityManager->getRepository(ApiToken::class)->findOneBy(['refreshToken' => $apiRefreshToken]);
+        }
+
+        if (!$token) {
+            throw new CustomUserMessageAuthenticationException(
+                'Invalid API Token'
+            );
+        }
+        if ($token->isExpired()) {
+            throw new CustomUserMessageAuthenticationException(
+                'Token expired'
+            );
         }
 
         // if a User object, checkCredentials() is called
-        return $this->entityManager->getRepository(User::class)
-            ->findUserByCredentials($credentials);
+        return $token->getCreatedBy();
     }
 
     public function checkCredentials($credentials, UserInterface $user)
