@@ -32,7 +32,7 @@ class TokenAuthenticator extends AbstractGuardAuthenticator
      */
     public function supports(Request $request)
     {
-        return $request->headers->has('AUTH-ACCESS-TOKEN') || $request->headers->has('AUTH-REFRESH-TOKEN') ? true : false;
+        return  true;
     }
 
     /**
@@ -42,8 +42,8 @@ class TokenAuthenticator extends AbstractGuardAuthenticator
     public function getCredentials(Request $request)
     {
         return [
-            'access-token' => $request->headers->get('AUTH-ACCESS-TOKEN'),
-            'refresh-token' => $request->headers->get('AUTH-REFRESH-TOKEN'),
+            'access-token' => $request->headers->has('AUTH-ACCESS-TOKEN') ? $request->headers->get('AUTH-ACCESS-TOKEN') : null,
+            'refresh-token' => $request->headers->has('AUTH-REFRESH-TOKEN') ? $request->headers->get('AUTH-REFRESH-TOKEN') : null,
         ];
     }
 
@@ -52,7 +52,7 @@ class TokenAuthenticator extends AbstractGuardAuthenticator
         $apiAccessToken = $credentials['access-token'];
         $apiRefreshToken = $credentials['refresh-token'];
 
-        if (null === $credentials['access-token'] || null === $credentials['refresh-token']) {
+        if (null === $credentials['access-token'] && null === $credentials['refresh-token']) {
             return;
         }
 
