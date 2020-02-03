@@ -20,18 +20,46 @@ class TaskRepository extends ServiceEntityRepository
         parent::__construct($registry, Task::class);
     }
 
-    public function findByUser(User $user, $isQuery = false)
+    public function findAllNotDeletedByUser(User $user, $filter = null, $isQuery = false)
     {
-        $query = $this->createQueryBuilder('task')
+        $queryBuilder = $this->createQueryBuilder('task')
             ->select('task')
             ->where('task.createdBy = :createdBy')
             ->andWhere('task.isDeleted = FALSE')
-            ->setParameter('createdBy', $user)
-            ->getQuery();
+            ->setParameter('createdBy', $user);
+        if ($filter) {
+            if ($filter == Task::STATUS_EXPIRED) {
+                $queryBuilder->andWhere('task.dueDate < :now')->setParameter('now', new \DateTime('now'));
+            } else {
+                $queryBuilder->andWhere('task.status LIKE :filter')->setParameter('filter', '%' . $filter . '%');
+            }
+        }
         if ($isQuery == true) {
-            return $query;
+            return $queryBuilder->getQuery();
         } else {
-            return $query->getResult();
+            return $queryBuilder->getQuery()->getResult();
+        }
+    }
+
+    public function findDoableNotDeletedByUser(User $user, $filter = null, $isQuery = false)
+    {
+        $queryBuilder = $this->createQueryBuilder('task')
+            ->select('task')
+            ->where('task.createdBy = :createdBy')
+            ->andWhere('task.isDeleted = FALSE')
+            ->andWhere('task.dueDate >= :now')
+            ->andWhere("task.status = :ready OR task.status = :doing ")
+            ->setParameter('createdBy', $user)
+            ->setParameter('now', new \DateTime('now'))
+            ->setParameter('ready', Task::STATUS_READY)
+            ->setParameter('doing', Task::STATUS_DOING);
+        if ($filter) {
+            $queryBuilder->andWhere('task.status LIKE :filter')->setParameter('filter', '%' . $filter . '%');
+        }
+        if ($isQuery == true) {
+            return $queryBuilder->getQuery();
+        } else {
+            return $queryBuilder->getQuery()->getResult();
         }
     }
 

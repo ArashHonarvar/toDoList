@@ -6,6 +6,8 @@ namespace App\Security;
 
 use App\Entity\User\ApiToken;
 use App\Entity\User\User;
+use App\Tools\ApiProblem;
+use App\Tools\ApiProblemException;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -34,7 +36,7 @@ class TokenAuthenticator extends AbstractGuardAuthenticator
      */
     public function supports(Request $request)
     {
-        return "api_token_show_with_access_token" == $request->attributes->get('_route') ? false : true;
+        return "api_token_show" == $request->attributes->get('_route') ? false : true;
     }
 
     /**
@@ -63,26 +65,36 @@ class TokenAuthenticator extends AbstractGuardAuthenticator
         $apiRefreshToken = $credentials['refresh-token'];
 
         if (null === $apiAccessToken && null === $apiRefreshToken) {
-            throw new CustomUserMessageAuthenticationException(
-                'Authentication Headers are missing'
+
+            $apiProblem = new ApiProblem(
+                Response::HTTP_UNAUTHORIZED,
+                ApiProblem::TYPE_AUTH_HEADERS_MISSING
             );
+
+            throw new ApiProblemException($apiProblem);
         }
 
         if (isset($apiAccessToken)) {
             $token = $this->entityManager->getRepository(ApiToken::class)->findOneBy(['accessToken' => $apiAccessToken]);
             if ($token && $token->isExpired()) {
-                throw new CustomUserMessageAuthenticationException(
-                    'Token expired'
+                $apiProblem = new ApiProblem(
+                    Response::HTTP_UNAUTHORIZED,
+                    ApiProblem::TYPE_AUTH_TOKEN_EXPIRED
                 );
+
+                throw new ApiProblemException($apiProblem);
             }
         } else {
             $token = $this->entityManager->getRepository(ApiToken::class)->findOneBy(['refreshToken' => $apiRefreshToken]);
         }
 
         if (!$token) {
-            throw new CustomUserMessageAuthenticationException(
-                'Invalid API Token'
+            $apiProblem = new ApiProblem(
+                Response::HTTP_UNAUTHORIZED,
+                ApiProblem::TYPE_AUTH_TOKEN_INVALID
             );
+
+            throw new ApiProblemException($apiProblem);
         }
 
         // if a User object, checkCredentials() is called
@@ -108,9 +120,6 @@ class TokenAuthenticator extends AbstractGuardAuthenticator
     {
         $data = [
             'message' => strtr($exception->getMessageKey(), $exception->getMessageData())
-
-            // or to translate this message
-            // $this->translator->trans($exception->getMessageKey(), $exception->getMessageData())
         ];
 
         return new JsonResponse($data, Response::HTTP_FORBIDDEN);
@@ -121,12 +130,12 @@ class TokenAuthenticator extends AbstractGuardAuthenticator
      */
     public function start(Request $request, AuthenticationException $authException = null)
     {
-        $data = [
-            // you might translate this message
-            'message' => 'Authentication Required'
-        ];
+        $apiProblem = new ApiProblem(
+            Response::HTTP_UNAUTHORIZED,
+            ApiProblem::TYPE_AUTH_REQUIRED
+        );
 
-        return new JsonResponse($data, Response::HTTP_UNAUTHORIZED);
+        throw new ApiProblemException($apiProblem);
     }
 
     public function supportsRememberMe()

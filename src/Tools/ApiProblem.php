@@ -13,11 +13,19 @@ class ApiProblem
     const TYPE_VALIDATION_ERROR = "validation_error";
     const TYPE_INVALID_REQUEST_BODY_FORMAT = "invalid_body_format";
     const TYPE_USER_EXISTED = "user_existed";
+    const TYPE_AUTH_HEADERS_MISSING = "auth_headers_missing";
+    const TYPE_AUTH_TOKEN_EXPIRED = "auth_token_expired";
+    const TYPE_AUTH_TOKEN_INVALID = "auth_token_invalid";
+    const TYPE_AUTH_REQUIRED = "auth_required";
 
     private static $titles = [
         self::TYPE_VALIDATION_ERROR => "There was a validation error",
         self::TYPE_INVALID_REQUEST_BODY_FORMAT => "Invalid JSON format sent",
         self::TYPE_USER_EXISTED => "User with this email/username existed",
+        self::TYPE_AUTH_HEADERS_MISSING => "Authentication Headers are missing",
+        self::TYPE_AUTH_TOKEN_EXPIRED => "ApiToken is expired",
+        self::TYPE_AUTH_TOKEN_INVALID => "ApiToken is invalid",
+        self::TYPE_AUTH_REQUIRED => "Authentication is Required",
     ];
 
     private $statusCode;

@@ -11,6 +11,13 @@ use Hateoas\Configuration\Annotation as Hateoas;
 /**
  * @Serializer\ExclusionPolicy("all")
  * @ORM\Entity(repositoryClass="App\Repository\User\ApiTokenRepository")
+ * @Hateoas\Relation(
+ *     "self",
+ *     href=@Hateoas\Route(
+ *          "api_token_show",
+ *          parameters={"accessToken"= "expr(object.getAccessToken  ())"}
+ *     )
+ * )
  */
 class ApiToken
 {

@@ -7,6 +7,7 @@ namespace App\Controller\Api\User;
 use App\Controller\BaseController;
 use App\Entity\User\ApiToken;
 use App\Entity\User\User;
+use App\Form\User\UpdateUserType;
 use App\Form\User\UserType;
 use App\Service\CustomPagination;
 use App\Tools\ApiProblem;
@@ -49,6 +50,25 @@ class UserController extends BaseController
     }
 
     /**
+     * @Route("/update", name="api_user_update" , methods={"PUT"})
+     */
+    public function updateAction(Request $request)
+    {
+        $username = $request->headers->get('AUTH-USERNAME');
+        $user = $this->getEntityManager()->getRepository(User::class)->findOneBy(['username' => $username]);
+
+        $form = $this->createForm(UpdateUserType::class, $user);
+        $this->processForm($request, $form);
+        if (!$form->isValid()) {
+            $this->throwApiProblemValidationException($form);
+        }
+        $this->getEntityManager()->persist($user);
+        $this->getEntityManager()->flush();
+        $response = $this->createApiResponse($user);
+        return $response;
+    }
+
+    /**
      * @Route("/token/list", name="api_user_token_list" , methods={"GET"})
      */
     public function tokenListAction(Request $request, CustomPagination $pagination)
@@ -57,7 +77,7 @@ class UserController extends BaseController
         $tokensQuery = $this->getEntityManager()->getRepository(ApiToken::class)->findTokensByUsername($username);
         $limit = $request->query->get('limit', 5);
         $page = $request->query->get('page', 1);
-        $paginatedData = $pagination->paginate($tokensQuery, "api_user_token_list", $page, $limit);
+        $paginatedData = $pagination->paginate($tokensQuery, "api_user_token_list", $request->query->all(), $page, $limit);
         $response = $this->createApiResponse($paginatedData, 200, true);
         return $response;
     }
@@ -76,14 +96,15 @@ class UserController extends BaseController
     }
 
     /**
-     * @Route("/show/{accessToken}", name="api_user_show_with_token" , methods={"GET"})
+     * @Route("/{accessToken}", name="api_user_show_with_token" , methods={"GET"})
      */
-    public function showWithAccessTokenAction($accessToken, Request $request)
+    public function showWithTokenAction($accessToken, Request $request)
     {
         $apiToken = $this->getEntityManager()->getRepository(ApiToken::class)->findOneBy(['accessToken' => $accessToken]);
-        $user = null;
         if ($apiToken) {
             $user = $apiToken->getCreatedBy();
+        } else {
+            throw $this->createNotFoundException("User with token " . $accessToken . " is not found!");
         }
         $response = $this->createApiResponse($user);
         return $response;

@@ -24,6 +24,8 @@ use Symfony\Component\Routing\Annotation\Route;
  */
 class TaskController extends BaseController
 {
+    private $default_items_per_page = 5;
+
     /**
      * @Route("/create" , name="api_task_create" , methods={"POST"})
      */
@@ -95,9 +97,9 @@ class TaskController extends BaseController
     public function logsListAction($taskId, Request $request, CustomPagination $pagination)
     {
         $logsQuery = $this->getEntityManager()->getRepository(TaskLog::class)->findLogsByTaskId($taskId, true);
-        $limit = $request->query->get('limit', 5);
+        $limit = $request->query->get('limit', $this->default_items_per_page);
         $page = $request->query->get('page', 1);
-        $paginatedData = $pagination->paginate($logsQuery, "api_task_logs_list", $page, $limit);
+        $paginatedData = $pagination->paginate($logsQuery, "api_task_logs_list", $request->query->all(), $page, $limit);
         $response = $this->createApiResponse($paginatedData);
         return $response;
     }
@@ -107,12 +109,33 @@ class TaskController extends BaseController
      */
     public function listAction(Request $request, CustomPagination $pagination)
     {
+        //Filter by status
+        $filter = $request->query->get('status');
+        //
         $accessToken = $request->headers->get('AUTH-ACCESS-TOKEN');
         $user = $this->getUserByAccessToken($accessToken);
-        $tasksQuery = $this->getEntityManager()->getRepository(Task::class)->findByUser($user, true);
-        $limit = $request->query->get('limit', 2);
+        $tasksQuery = $this->getEntityManager()->getRepository(Task::class)->findAllNotDeletedByUser($user, $filter, true);
+        $limit = $request->query->get('limit', $this->default_items_per_page);
         $page = $request->query->get('page', 1);
-        $paginatedData = $pagination->paginate($tasksQuery, "api_task_list", $page, $limit);
+        $paginatedData = $pagination->paginate($tasksQuery, "api_task_list", $request->query->all(), $page, $limit);
+        $response = $this->createApiResponse($paginatedData);
+        return $response;
+    }
+
+    /**
+     * @Route("/home" , name="api_task_homepage" , methods={"GET"})
+     */
+    public function homepageAction(Request $request, CustomPagination $pagination)
+    {
+        //Filter by status
+        $filter = $request->query->get('status');
+        //
+        $accessToken = $request->headers->get('AUTH-ACCESS-TOKEN');
+        $user = $this->getUserByAccessToken($accessToken);
+        $tasksQuery = $this->getEntityManager()->getRepository(Task::class)->findDoableNotDeletedByUser($user, $filter, true);
+        $limit = $request->query->get('limit', $this->default_items_per_page);
+        $page = $request->query->get('page', 1);
+        $paginatedData = $pagination->paginate($tasksQuery, "api_task_homepage", $request->query->all(), $page, $limit);
         $response = $this->createApiResponse($paginatedData);
         return $response;
     }

@@ -26,7 +26,7 @@ class CustomPagination
      * @param int $limit - number of items per page
      * @return PaginatedRepresentation
      */
-    public function paginate($dataQuery, $currentRoute, $currentPage, $limit)
+    public function paginate($dataQuery, $currentRoute, $parameters, $currentPage, $limit)
     {
         $paginatedData = $this->paginator->paginate($dataQuery, $currentPage, $limit);
         $numberOfPages = (int)ceil($paginatedData->getTotalItemCount() / $limit);
@@ -34,7 +34,7 @@ class CustomPagination
         $paginatedResult = new PaginatedRepresentation(
             $collection,
             $currentRoute,
-            array(),
+            $parameters,
             $currentPage,
             $limit,
             $numberOfPages,

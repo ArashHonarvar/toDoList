@@ -104,6 +104,7 @@ class Task
     /**
      * @ORM\Column(type="datetime" , options={"default": "CURRENT_TIMESTAMP"})
      * @Gedmo\Timestampable(on="update")
+     * @Serializer\Expose()
      */
     private $updatedAt;
 

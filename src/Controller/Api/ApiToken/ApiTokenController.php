@@ -26,21 +26,11 @@ use Symfony\Component\Security\Core\User\UserInterface;
 class ApiTokenController extends BaseController
 {
 
-    /**
-     * @Route("/", name="api_token_show" , methods={"GET"})
-     */
-    public function showAction(Request $request)
-    {
-        $accessToken = $request->headers->get('AUTH-ACCESS-TOKEN');
-        $token = $this->getEntityManager()->getRepository(ApiToken::class)->findOneBy(['accessToken' => $accessToken]);
-        $response = $this->createApiResponse($token);
-        return $response;
-    }
 
     /**
-     * @Route("/show/{accessToken}", name="api_token_show_with_token" , methods={"GET"})
+     * @Route("/{accessToken}", name="api_token_show" , methods={"GET"})
      */
-    public function showWithAccessTokenAction($accessToken, Request $request)
+    public function showAction($accessToken, Request $request)
     {
         $apiToken = $this->getEntityManager()->getRepository(ApiToken::class)->findOneBy(['accessToken' => $accessToken]);
         $response = $this->createApiResponse($apiToken);

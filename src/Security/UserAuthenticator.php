@@ -5,6 +5,8 @@ namespace App\Security;
 
 
 use App\Entity\User\User;
+use App\Tools\ApiProblem;
+use App\Tools\ApiProblemException;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -37,7 +39,9 @@ class UserAuthenticator extends AbstractGuardAuthenticator
      */
     public function supports(Request $request)
     {
-        return "api_user_register" == $request->attributes->get('_route') || "api_user_show_with_token"  == $request->attributes->get('_route') ? false : true;    }
+        $route = $request->attributes->get('_route');
+        return "api_user_register" == $route || "api_user_show_with_token" == $route ? false : true;
+    }
 
     /**
      * Called on every request. Return whatever credentials you want to
@@ -54,9 +58,12 @@ class UserAuthenticator extends AbstractGuardAuthenticator
     public function getUser($credentials, UserProviderInterface $userProvider)
     {
         if (null === $credentials['username'] || null === $credentials['password']) {
-            throw new CustomUserMessageAuthenticationException(
-                'Authentication Headers are missing'
+            $apiProblem = new ApiProblem(
+                Response::HTTP_UNAUTHORIZED,
+                ApiProblem::TYPE_AUTH_HEADERS_MISSING
             );
+
+            throw new ApiProblemException($apiProblem);
         }
 
         // if a User object, checkCredentials() is called
@@ -83,9 +90,6 @@ class UserAuthenticator extends AbstractGuardAuthenticator
     {
         $data = [
             'message' => strtr($exception->getMessageKey(), $exception->getMessageData())
-
-            // or to translate this message
-            // $this->translator->trans($exception->getMessageKey(), $exception->getMessageData())
         ];
 
         return new JsonResponse($data, Response::HTTP_FORBIDDEN);
@@ -96,12 +100,12 @@ class UserAuthenticator extends AbstractGuardAuthenticator
      */
     public function start(Request $request, AuthenticationException $authException = null)
     {
-        $data = [
-            // you might translate this message
-            'message' => 'Authentication Required'
-        ];
+        $apiProblem = new ApiProblem(
+            Response::HTTP_UNAUTHORIZED,
+            ApiProblem::TYPE_AUTH_REQUIRED
+        );
 
-        return new JsonResponse($data, Response::HTTP_UNAUTHORIZED);
+        throw new ApiProblemException($apiProblem);
     }
 
     public function supportsRememberMe()

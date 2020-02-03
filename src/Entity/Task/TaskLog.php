@@ -6,9 +6,19 @@ use App\Entity\Task\Task;
 use App\Entity\User\User;
 use Doctrine\ORM\Mapping as ORM;
 use Gedmo\Mapping\Annotation as Gedmo;
+use JMS\Serializer\Annotation as Serializer;
+use Hateoas\Configuration\Annotation as Hateoas;
 
 /**
  * @ORM\Entity(repositoryClass="App\Repository\Task\TaskLogRepository")
+ * @Serializer\ExclusionPolicy("all")
+ * @Hateoas\Relation(
+ *     "task",
+ *     href=@Hateoas\Route(
+ *          "api_task_show",
+ *          parameters={"taskId"= "expr(object.getTaskId())"}
+ *     )
+ * )
  */
 class TaskLog
 {
@@ -21,18 +31,21 @@ class TaskLog
 
     /**
      * @ORM\Column(type="text", nullable=true)
+     * @Serializer\Expose()
      */
     private $description;
 
     /**
      * @ORM\Column(type="datetime")
      * @Gedmo\Timestampable(on="create")
+     * @Serializer\Expose()
      */
     private $createdAt;
 
     /**
      * @ORM\ManyToOne(targetEntity="App\Entity\User\User")
      * @ORM\JoinColumn(name="user_id", referencedColumnName="id")
+     * @Serializer\Expose()
      */
     private $createdBy;
 
@@ -40,6 +53,11 @@ class TaskLog
      * @ORM\ManyToOne(targetEntity="App\Entity\Task\Task" , inversedBy="logs", cascade={"persist","remove"})
      */
     private $task;
+
+    public function getTaskId(): ?int
+    {
+        return $this->getTask()->getId();
+    }
 
     //    ***************** Auto Generated Functions **************
 
