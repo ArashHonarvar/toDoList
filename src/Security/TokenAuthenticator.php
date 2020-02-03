@@ -44,9 +44,9 @@ class TokenAuthenticator extends AbstractGuardAuthenticator
     public function getCredentials(Request $request)
     {
         if($request->attributes->get('_route') == "x"){
-            $data = ['refresh-token' =>  $request->headers->get('AUTH-REFRESH-TOKEN') , 'access-token' => null ]
+            $data = ['refresh-token' =>  $request->headers->get('AUTH-REFRESH-TOKEN') , 'access-token' => null ];
         }else{
-            $data = ['access-token' =>  $request->headers->get('AUTH-ACCESS-TOKEN') , 'refresh-token' => null ]
+            $data = ['access-token' =>  $request->headers->get('AUTH-ACCESS-TOKEN') , 'refresh-token' => null ];
         }
         return $data;
     }
