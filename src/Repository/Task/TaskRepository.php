@@ -3,6 +3,7 @@
 namespace App\Repository\Task;
 
 use App\Entity\Task\Task;
+use App\Entity\User\User;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Common\Persistence\ManagerRegistry;
 
@@ -17,6 +18,36 @@ class TaskRepository extends ServiceEntityRepository
     public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, Task::class);
+    }
+
+    public function findByUser(User $user, $isQuery = false)
+    {
+        $query = $this->createQueryBuilder('task')
+            ->select('task')
+            ->where('task.createdBy = :createdBy')
+            ->andWhere('task.isDeleted = FALSE')
+            ->setParameter('createdBy', $user)
+            ->getQuery();
+        if ($isQuery == true) {
+            return $query;
+        } else {
+            return $query->getResult();
+        }
+    }
+
+    /**
+     * @param $taskId
+     * @return Task
+     */
+    public function findNotDeleted($taskId)
+    {
+        $query = $this->createQueryBuilder('task')
+            ->select('task')
+            ->where('task.id = :taskId')
+            ->andWhere('task.isDeleted = FALSE')
+            ->setParameter('taskId', $taskId)
+            ->getQuery();
+        return $query->setMaxResults(1)->getOneOrNullResult();
     }
 
     // /**

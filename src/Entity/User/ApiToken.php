@@ -11,7 +11,6 @@ use Hateoas\Configuration\Annotation as Hateoas;
 /**
  * @Serializer\ExclusionPolicy("all")
  * @ORM\Entity(repositoryClass="App\Repository\User\ApiTokenRepository")
- * @Hateoas\Relation("user", href = "expr('/user/show/' ~ object.getAccessToken())")
  */
 class ApiToken
 {
@@ -50,6 +49,7 @@ class ApiToken
     /**
      *
      * @ORM\ManyToOne(targetEntity="App\Entity\User\User" , inversedBy="tokens")
+     * @Serializer\Expose()
      */
     private $createdBy;
 

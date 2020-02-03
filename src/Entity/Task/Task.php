@@ -7,9 +7,34 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Gedmo\Mapping\Annotation as Gedmo;
+use Symfony\Component\Validator\Constraints as Assert;
+use JMS\Serializer\Annotation as Serializer;
+use Hateoas\Configuration\Annotation as Hateoas;
 
 /**
  * @ORM\Entity(repositoryClass="App\Repository\Task\TaskRepository")
+ * @Serializer\ExclusionPolicy("all")
+ * @Hateoas\Relation(
+ *     "logs",
+ *     href=@Hateoas\Route(
+ *          "api_task_logs_list",
+ *          parameters={"taskId"= "expr(object.getId())"}
+ *     )
+ * )
+ * @Hateoas\Relation(
+ *     "self",
+ *     href=@Hateoas\Route(
+ *          "api_task_show",
+ *          parameters={"taskId"= "expr(object.getId())"}
+ *     )
+ * )
+ * @Hateoas\Relation(
+ *     "delete",
+ *     href=@Hateoas\Route(
+ *          "api_task_delete",
+ *          parameters={"taskId"= "expr(object.getId())"}
+ *     )
+ * )
  */
 class Task
 {
@@ -17,38 +42,45 @@ class Task
     const STATUS_READY = 'ready';
     const STATUS_DOING = 'doing';
     const STATUS_DONE = 'done';
+    const STATUS_EXPIRED = 'expired';
 
     /**
      * @ORM\Id()
      * @ORM\GeneratedValue()
      * @ORM\Column(type="integer")
+     * @Serializer\Expose()
      */
     private $id;
 
     /**
+     * @Assert\NotBlank(message="Please enter a title")
      * @ORM\Column(type="string", length=255)
+     * @Serializer\Expose()
      */
     private $title;
 
     /**
      * @ORM\Column(type="text", nullable=true)
+     * @Serializer\Expose()
      */
     private $description;
 
     /**
      * @ORM\OneToMany(targetEntity="App\Entity\Task\TaskLog" , mappedBy="task", cascade={"persist","remove"})
      */
-    private $task;
+    private $logs;
 
     /**
      * @ORM\Column(type="datetime")
      * @Gedmo\Timestampable(on="create")
+     * @Serializer\Expose()
      */
     private $createdAt;
 
     /**
      * @ORM\ManyToOne(targetEntity="App\Entity\User\User")
      * @ORM\JoinColumn(name="user_id", referencedColumnName="id")
+     * @Serializer\Expose()
      */
     private $createdBy;
 
@@ -58,14 +90,16 @@ class Task
     private $status = self::STATUS_READY;
 
     /**
+     * @Assert\NotBlank(message="Please enter a dueDate")
      * @ORM\Column(type="datetime")
+     * @Serializer\Expose()
      */
     private $dueDate;
 
     /**
      * @ORM\Column(type="boolean")
      */
-    private $isDeleted;
+    private $isDeleted = false;
 
     /**
      * @ORM\Column(type="datetime" , options={"default": "CURRENT_TIMESTAMP"})
@@ -73,13 +107,26 @@ class Task
      */
     private $updatedAt;
 
-    public function __construct()
+    /**
+     * @return string
+     * @Serializer\VirtualProperty(name="status")
+     * @Serializer\SerializedName("status")
+     */
+    public function showStatus()
     {
-        $this->task = new ArrayCollection();
+        $status = $this->getStatus();
+        if ($this->dueDate < new \DateTime()) {
+            return self::STATUS_EXPIRED;
+        } else {
+            return $status;
+        }
     }
 
-
-//    ***************** Auto Generated Functions **************
+    //    ***************** Auto Generated Functions **************
+    public function __construct()
+    {
+        $this->logs = new ArrayCollection();
+    }
 
     public function getId(): ?int
     {
@@ -122,6 +169,18 @@ class Task
         return $this;
     }
 
+    public function getStatus(): ?string
+    {
+        return $this->status;
+    }
+
+    public function setStatus(string $status): self
+    {
+        $this->status = $status;
+
+        return $this;
+    }
+
     public function getDueDate(): ?\DateTimeInterface
     {
         return $this->dueDate;
@@ -158,6 +217,37 @@ class Task
         return $this;
     }
 
+    /**
+     * @return Collection|TaskLog[]
+     */
+    public function getLogs(): Collection
+    {
+        return $this->logs;
+    }
+
+    public function addLog(TaskLog $log): self
+    {
+        if (!$this->logs->contains($log)) {
+            $this->logs[] = $log;
+            $log->setTask($this);
+        }
+
+        return $this;
+    }
+
+    public function removeLog(TaskLog $log): self
+    {
+        if ($this->logs->contains($log)) {
+            $this->logs->removeElement($log);
+            // set the owning side to null (unless already changed)
+            if ($log->getTask() === $this) {
+                $log->setTask(null);
+            }
+        }
+
+        return $this;
+    }
+
     public function getCreatedBy(): ?User
     {
         return $this->createdBy;
@@ -170,46 +260,7 @@ class Task
         return $this;
     }
 
-    public function getStatus(): ?string
-    {
-        return $this->status;
-    }
+//    ***************** Auto Generated Functions **************
 
-    public function setStatus(string $status): self
-    {
-        $this->status = $status;
 
-        return $this;
-    }
-
-    /**
-     * @return Collection|TaskLog[]
-     */
-    public function getTask(): Collection
-    {
-        return $this->task;
-    }
-
-    public function addTask(TaskLog $task): self
-    {
-        if (!$this->task->contains($task)) {
-            $this->task[] = $task;
-            $task->setTask($this);
-        }
-
-        return $this;
-    }
-
-    public function removeTask(TaskLog $task): self
-    {
-        if ($this->task->contains($task)) {
-            $this->task->removeElement($task);
-            // set the owning side to null (unless already changed)
-            if ($task->getTask() === $this) {
-                $task->setTask(null);
-            }
-        }
-
-        return $this;
-    }
 }

@@ -19,6 +19,23 @@ class TaskLogRepository extends ServiceEntityRepository
         parent::__construct($registry, TaskLog::class);
     }
 
+    public function findLogsByTaskId($taskId, $isQuery = false)
+    {
+        $query = $this->createQueryBuilder('task_log')
+            ->select('task_log')
+            ->join('task_log.task', 'task')
+            ->where('task.id = :taskId')
+            ->andWhere('task.isDeleted = FALSE')
+            ->setParameter('taskId', $taskId)
+            ->getQuery();
+        if ($isQuery == true) {
+            return $query;
+        } else {
+            return $query->getResult();
+        }
+    }
+
+
     // /**
     //  * @return TaskLog[] Returns an array of TaskLog objects
     //  */

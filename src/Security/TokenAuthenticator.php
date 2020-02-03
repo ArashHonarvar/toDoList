@@ -70,7 +70,7 @@ class TokenAuthenticator extends AbstractGuardAuthenticator
 
         if (isset($apiAccessToken)) {
             $token = $this->entityManager->getRepository(ApiToken::class)->findOneBy(['accessToken' => $apiAccessToken]);
-            if ($token->isExpired()) {
+            if ($token && $token->isExpired()) {
                 throw new CustomUserMessageAuthenticationException(
                     'Token expired'
                 );

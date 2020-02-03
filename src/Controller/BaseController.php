@@ -4,6 +4,8 @@
 namespace App\Controller;
 
 
+use App\Entity\Task\Task;
+use App\Entity\Task\TaskLog;
 use App\Entity\User\ApiToken;
 use App\Entity\User\User;
 use App\Tools\ApiProblem;
@@ -31,7 +33,7 @@ class BaseController extends AbstractController
     private $passwordEncoder;
     private $urlGenerator;
 
-    public function __construct(UserPasswordEncoderInterface $passwordEncoder,UrlGeneratorInterface $urlGenerator)
+    public function __construct(UserPasswordEncoderInterface $passwordEncoder, UrlGeneratorInterface $urlGenerator)
     {
         $reader = new AnnotationReader();
         AnnotationReader::addGlobalIgnoredName('alias');
@@ -151,6 +153,31 @@ class BaseController extends AbstractController
         $this->getEntityManager()->persist($apiToken);
         $this->getEntityManager()->flush();
         return $apiToken;
+    }
+
+    /**
+     * @return User
+     */
+    protected function getUserByAccessToken($accessToken)
+    {
+        $token = $this->getEntityManager()->getRepository(ApiToken::class)->findOneBy(['accessToken' => $accessToken]);
+        return $token->getCreatedBy();
+    }
+
+    /**
+     * @return TaskLog
+     */
+    protected function createTaskLog(Task $task, User $user, $description)
+    {
+        $taskLog = new TaskLog();
+        $taskLog->setTask($task);
+        $taskLog->setCreatedBy($user);
+        $taskLog->setDescription($description);
+        $this->getEntityManager()->persist($taskLog);
+        $task->addLog($taskLog);
+        $this->getEntityManager()->persist($task);
+        $this->getEntityManager()->flush();
+        return $taskLog;
     }
 
 
