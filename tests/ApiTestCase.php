@@ -35,8 +35,9 @@ class ApiTestCase extends KernelTestCase
     private $formatterHelper;
 
 
-    private $output;
+    private $responseAsserter;
 
+    private $output;
 
 
     public static function setUpBeforeClass(): void
@@ -179,6 +180,31 @@ class ApiTestCase extends KernelTestCase
     protected function getEntityManager()
     {
         return $this->getService('doctrine.orm.entity_manager');
+    }
+
+    protected function asserter()
+    {
+        if ($this->responseAsserter === null) {
+            $this->responseAsserter = new ResponseAsserter();
+        }
+        return $this->responseAsserter;
+    }
+
+    protected function createUser(array $data)
+    {
+        $accessor = PropertyAccess::createPropertyAccessor();
+        $user = new \App\Entity\User\User();
+        foreach ($data as $key => $value) {
+            if ($key == "password") {
+                $value = $this->getService('security.password_encoder')->encodePassword($user, $value);
+            }
+            $accessor->setValue($user, $key, $value);
+        }
+
+        $this->getEntityManager()->persist($user);
+        $this->getEntityManager()->flush();
+
+        return $user;
     }
 
 }

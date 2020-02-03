@@ -22,7 +22,9 @@ class UserType extends AbstractType
             ->add('username', TextType::class, [
                 "disabled" => $options['is_edit'],
             ])
-            ->add('password', PasswordType::class)
+            ->add('password', PasswordType::class, [
+                "disabled" => $options['is_edit'],
+            ])
             ->add('email', EmailType::class);
     }
 
