@@ -34,7 +34,7 @@ class TokenAuthenticator extends AbstractGuardAuthenticator
      */
     public function supports(Request $request)
     {
-        return "api_token_show_with_token" == $request->attributes->get('_route') ? false : true;
+        return "api_token_show_with_access_token" == $request->attributes->get('_route') ? false : true;
     }
 
     /**
@@ -43,12 +43,18 @@ class TokenAuthenticator extends AbstractGuardAuthenticator
      */
     public function getCredentials(Request $request)
     {
-        if($request->attributes->get('_route') == "x"){
-            $data = ['refresh-token' =>  $request->headers->get('AUTH-REFRESH-TOKEN') , 'access-token' => null ];
-        }else{
-            $data = ['access-token' =>  $request->headers->get('AUTH-ACCESS-TOKEN') , 'refresh-token' => null ];
+        if ($request->attributes->get('_route') == "api_token_refresh") {
+            return [
+                'access-token' => null,
+                'refresh-token' => $request->headers->get('AUTH-REFRESH-TOKEN'),
+            ];
+        } else {
+            return [
+                'access-token' => $request->headers->get('AUTH-ACCESS-TOKEN'),
+                'refresh-token' => null,
+            ];
         }
-        return $data;
+
     }
 
     public function getUser($credentials, UserProviderInterface $userProvider)
@@ -65,10 +71,10 @@ class TokenAuthenticator extends AbstractGuardAuthenticator
         if (isset($apiAccessToken)) {
             $token = $this->entityManager->getRepository(ApiToken::class)->findOneBy(['accessToken' => $apiAccessToken]);
             if ($token->isExpired()) {
-            throw new CustomUserMessageAuthenticationException(
-                'Token expired'
-            );
-        }
+                throw new CustomUserMessageAuthenticationException(
+                    'Token expired'
+                );
+            }
         } else {
             $token = $this->entityManager->getRepository(ApiToken::class)->findOneBy(['refreshToken' => $apiRefreshToken]);
         }

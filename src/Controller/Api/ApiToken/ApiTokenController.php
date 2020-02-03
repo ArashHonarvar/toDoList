@@ -47,4 +47,16 @@ class ApiTokenController extends BaseController
         return $response;
     }
 
+    /**
+     * @Route("/refresh", name="api_token_refresh" , methods={"POST"})
+     */
+    public function refreshAction(Request $request)
+    {
+        $refreshToken = $request->headers->get('AUTH-REFRESH-TOKEN');
+        $apiToken = $this->getEntityManager()->getRepository(ApiToken::class)->findOneBy(['refreshToken' => $refreshToken]);
+        $token = $this->createToken($apiToken->getCreatedBy());
+        $response = $this->createApiResponse($token, 201);
+        return $response;
+    }
+
 }

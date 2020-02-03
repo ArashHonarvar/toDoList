@@ -2,6 +2,8 @@
 
 namespace App\Entity\User;
 
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Gedmo\Mapping\Annotation as Gedmo;
@@ -66,6 +68,11 @@ class User implements UserInterface
      * @ORM\Column(type="json")
      */
     private $roles = [];
+
+    public function __construct()
+    {
+        $this->tokens = new ArrayCollection();
+    }
 
     //    ***************** Auto Generated Functions **************
 
@@ -134,22 +141,43 @@ class User implements UserInterface
         return $this;
     }
 
-    public function getTokens(): ?ApiToken
-    {
-        return $this->tokens;
-    }
-
-    public function setTokens(?ApiToken $tokens): self
-    {
-        $this->tokens = $tokens;
-
-        return $this;
-    }
-
     public function setRoles(array $roles): self
     {
         $this->roles = $roles;
 
         return $this;
     }
+
+    /**
+     * @return Collection|ApiToken[]
+     */
+    public function getTokens(): Collection
+    {
+        return $this->tokens;
+    }
+
+    public function addToken(ApiToken $token): self
+    {
+        if (!$this->tokens->contains($token)) {
+            $this->tokens[] = $token;
+            $token->setCreatedBy($this);
+        }
+
+        return $this;
+    }
+
+    public function removeToken(ApiToken $token): self
+    {
+        if ($this->tokens->contains($token)) {
+            $this->tokens->removeElement($token);
+            // set the owning side to null (unless already changed)
+            if ($token->getCreatedBy() === $this) {
+                $token->setCreatedBy(null);
+            }
+        }
+
+        return $this;
+    }
+
+
 }

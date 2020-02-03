@@ -8,10 +8,14 @@ use App\Controller\BaseController;
 use App\Entity\User\ApiToken;
 use App\Entity\User\User;
 use App\Form\User\UserType;
+use App\Service\CustomPagination;
 use App\Tools\ApiProblem;
 use App\Tools\ApiProblemException;
 use Carbon\Carbon;
 use Doctrine\Common\Annotations\AnnotationReader;
+use Hateoas\Representation\CollectionRepresentation;
+use Hateoas\Representation\PaginatedRepresentation;
+use Knp\Component\Pager\PaginatorInterface;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -44,6 +48,20 @@ class UserController extends BaseController
         return $response;
     }
 
+    /**
+     * @Route("/token/list", name="api_user_token_list" , methods={"GET"})
+     */
+    public function tokenListAction(Request $request, CustomPagination $pagination)
+    {
+        $username = $request->headers->get('AUTH-USERNAME');
+        $tokensQuery = $this->getEntityManager()->getRepository(ApiToken::class)->findTokensByUsername($username);
+        $limit = $request->query->get('limit', 5);
+        $page = $request->query->get('page', 1);
+        $paginatedData = $pagination->paginate($tokensQuery, "api_user_token_list", $page, $limit);
+        $response = $this->createApiResponse($paginatedData, 200, true);
+        return $response;
+    }
+
 
     /**
      * @Route("/token/generate", name="api_user_generate_token" , methods={"POST"})
@@ -69,66 +87,6 @@ class UserController extends BaseController
         }
         $response = $this->createApiResponse($user);
         return $response;
-    }
-
-    private function processForm(Request $request, FormInterface $form)
-    {
-        $body = $request->getContent();
-        $data = json_decode($body, true);
-        if (null === $data) {
-            $apiProblem = new ApiProblem(
-                400,
-                ApiProblem::TYPE_INVALID_REQUEST_BODY_FORMAT
-            );
-
-            throw new ApiProblemException($apiProblem);
-        }
-        $clearMissing = $request->getMethod() != 'PATCH';
-        $form->submit($data, $clearMissing);
-    }
-
-    private function getErrorsFromForm(FormInterface $form)
-    {
-        $errors = array();
-        foreach ($form->getErrors() as $error) {
-            $errors[] = $error->getMessage();
-        }
-
-        foreach ($form->all() as $childForm) {
-            if ($childForm instanceof FormInterface) {
-                if ($childErrors = $this->getErrorsFromForm($childForm)) {
-                    $errors[$childForm->getName()] = $childErrors;
-                }
-            }
-        }
-
-        return $errors;
-    }
-
-
-    private function throwApiProblemValidationException(FormInterface $form)
-    {
-        $errors = $this->getErrorsFromForm($form);
-        $apiProblem = new ApiProblem(
-            400,
-            ApiProblem::TYPE_VALIDATION_ERROR
-        );
-
-        $apiProblem->set("errors", $errors);
-        throw new ApiProblemException($apiProblem);
-    }
-
-    private function createToken(User $user)
-    {
-        $apiToken = new ApiToken();
-        $apiToken->setCreatedBy($user);
-        $now = Carbon::instance(new \DateTime('now'));
-        $now->addMonths(1);
-        $expiredAt = $now->toDateTimeString();
-        $apiToken->setExpiredAt(new \DateTime($expiredAt));
-        $this->getEntityManager()->persist($apiToken);
-        $this->getEntityManager()->flush();
-        return $apiToken;
     }
 
 

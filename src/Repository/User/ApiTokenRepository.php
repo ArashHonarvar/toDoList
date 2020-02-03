@@ -33,6 +33,20 @@ class ApiTokenRepository extends ServiceEntityRepository
             ->getQuery()->setMaxResults(1)->getOneOrNullResult();
     }
 
+    public function findTokensByUsername($username, $isQuery = false)
+    {
+        $query = $this->createQueryBuilder('api_token')
+            ->select('api_token')
+            ->join('api_token.createdBy', 'user')
+            ->where('user.username = :username')
+            ->setParameter('username', $username);
+        if ($isQuery == true) {
+            return $query->getQuery();
+        } else {
+            return $query->getQuery()->getResult();
+        }
+    }
+
     // /**
     //  * @return ApiToken[] Returns an array of ApiToken objects
     //  */
