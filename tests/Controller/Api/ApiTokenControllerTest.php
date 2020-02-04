@@ -21,8 +21,19 @@ class ApiTokenControllerTest extends ApiTestCase
 
     public function testShowToken()
     {
+
+        $data = [
+            'username' => 'ArashHonarvar',
+            'email' => "arash.ho.13723@gmail.com",
+            'password' => '123'
+        ];
+
+        $user = $this->createUser($data);
+
+        $apiToken = $this->createToken($user);
+
         try {
-            $response = $this->client->get("/token/tepqy7z95c0w0c8skg84ggco80okw0/");
+            $response = $this->client->get("/token/" . $apiToken->getAccessToken());
         } catch (\Exception $e) {
             if ($e->hasResponse()) {
                 $response = $e->getResponse();
@@ -37,9 +48,21 @@ class ApiTokenControllerTest extends ApiTestCase
 
     public function testRefreshToken()
     {
+
+
+        $data = [
+            'username' => 'ArashHonarvar',
+            'email' => "arash.ho.13723@gmail.com",
+            'password' => '123'
+        ];
+
+        $user = $this->createUser($data);
+
+        $apiToken = $this->createToken($user);
+
         try {
             $response = $this->client->post("/token/refresh", [
-                'headers' => ['AUTH-REFRESH-TOKEN' => 'dmom6glaboggw0ksg8ok008skswkokg']
+                'headers' => ['AUTH-REFRESH-TOKEN' => $apiToken->getRefreshToken()]
             ]);
         } catch (\Exception $e) {
             if ($e->hasResponse()) {

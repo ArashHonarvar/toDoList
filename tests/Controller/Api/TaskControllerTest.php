@@ -22,6 +22,16 @@ class TaskControllerTest extends ApiTestCase
     public function testCreateTask()
     {
         $data = [
+            'username' => 'ArashHonarvar',
+            'email' => "arash.ho.13723@gmail.com",
+            'password' => '123'
+        ];
+
+        $user = $this->createUser($data);
+
+        $apiToken = $this->createToken($user);
+
+        $data = [
             'title' => 'tesk 1',
             'description' => "desc",
             'dueDate' => '2020-03-03T00:00:00',
@@ -30,7 +40,7 @@ class TaskControllerTest extends ApiTestCase
         try {
             $response = $this->client->post("/api/task/create", [
                 'body' => json_encode($data),
-                'headers' => ['AUTH-ACCESS-TOKEN' => 'rot5clsypeogggcossw8s4ocw8s8k40']
+                'headers' => ['AUTH-ACCESS-TOKEN' => $apiToken->getAccessToken()]
             ]);
         } catch (\Exception $e) {
             if ($e->hasResponse()) {
@@ -50,6 +60,26 @@ class TaskControllerTest extends ApiTestCase
 
     public function testUpdateTask()
     {
+
+        $userData = [
+            'username' => 'ArashHonarvar',
+            'email' => "arash.ho.13723@gmail.com",
+            'password' => '123'
+        ];
+
+        $user = $this->createUser($userData);
+
+        $apiToken = $this->createToken($user);
+
+        $taskData = [
+            'title' => 'tesk 1',
+            'description' => "desc",
+            'dueDate' => '2020-03-03T00:00:00',
+        ];
+
+        $task = $this->createTask($taskData, $user);
+        $this->createTaskLog($task, $user, "Task has been created");
+
         $data = [
             'title' => 'tesk1',
             'description' => "desc new",
@@ -58,9 +88,9 @@ class TaskControllerTest extends ApiTestCase
         ];
 
         try {
-            $response = $this->client->put("/api/task/1", [
+            $response = $this->client->put("/api/task/" . $task->getId(), [
                 'body' => json_encode($data),
-                'headers' => ['AUTH-ACCESS-TOKEN' => 'rot5clsypeogggcossw8s4ocw8s8k40']
+                'headers' => ['AUTH-ACCESS-TOKEN' => $apiToken->getAccessToken()]
             ]);
         } catch (\Exception $e) {
             if ($e->hasResponse()) {
@@ -81,9 +111,29 @@ class TaskControllerTest extends ApiTestCase
 
     public function testChangeStatus()
     {
+
+        $userData = [
+            'username' => 'ArashHonarvar',
+            'email' => "arash.ho.13723@gmail.com",
+            'password' => '123'
+        ];
+
+        $user = $this->createUser($userData);
+
+        $apiToken = $this->createToken($user);
+
+        $taskData = [
+            'title' => 'tesk 1',
+            'description' => "desc",
+            'dueDate' => '2020-03-03T00:00:00',
+        ];
+
+        $task = $this->createTask($taskData, $user);
+        $this->createTaskLog($task, $user, "Task has been created");
+
         try {
-            $response = $this->client->put("/api/task/1/change/status/ready", [
-                'headers' => ['AUTH-ACCESS-TOKEN' => 'rot5clsypeogggcossw8s4ocw8s8k40']
+            $response = $this->client->put("/api/task/" . $task->getId() . "/change/status/doing", [
+                'headers' => ['AUTH-ACCESS-TOKEN' => $apiToken->getAccessToken()]
             ]);
         } catch (\Exception $e) {
             if ($e->hasResponse()) {
@@ -92,14 +142,34 @@ class TaskControllerTest extends ApiTestCase
             }
         }
         $this->assertEquals(200, $response->getStatusCode());
-        $this->asserter()->assertResponsePropertyEquals($response, 'status', "ready");
+        $this->asserter()->assertResponsePropertyEquals($response, 'status', "doing");
     }
 
     public function testTaskList()
     {
+
+        $userData = [
+            'username' => 'ArashHonarvar',
+            'email' => "arash.ho.13723@gmail.com",
+            'password' => '123'
+        ];
+
+        $user = $this->createUser($userData);
+
+        $apiToken = $this->createToken($user);
+
+        $taskData = [
+            'title' => 'tesk 1',
+            'description' => "desc",
+            'dueDate' => '2020-03-03T00:00:00',
+        ];
+
+        $task = $this->createTask($taskData, $user);
+        $this->createTaskLog($task, $user, "Task has been created");
+
         try {
             $response = $this->client->get("/api/task/list?status=ready", [
-                'headers' => ['AUTH-ACCESS-TOKEN' => 'rot5clsypeogggcossw8s4ocw8s8k40']
+                'headers' => ['AUTH-ACCESS-TOKEN' => $apiToken->getAccessToken()]
             ]);
         } catch (\Exception $e) {
             if ($e->hasResponse()) {
@@ -108,8 +178,9 @@ class TaskControllerTest extends ApiTestCase
             }
         }
         $this->assertEquals(200, $response->getStatusCode());
-        $this->asserter()->assertResponsePropertyEquals($response, 'total', "2");
-        $this->asserter()->assertResponsePropertyEquals($response, '_embedded.items[1].id', "2");
+        $this->asserter()->assertResponsePropertyEquals($response, 'total', "1");
+        $this->asserter()->assertResponsePropertyExists($response, "_embedded.items[0].id");
+        $this->asserter()->assertResponsePropertyEquals($response, "_embedded.items[0].id", $task->getId());
     }
 
 

@@ -4,8 +4,13 @@ declare(strict_types=1);
 namespace App\Tests;
 
 
+use App\Entity\Task\Task;
+use App\Entity\Task\TaskLog;
 use App\Entity\User;
 
+use App\Entity\User\ApiToken;
+use Carbon\Carbon;
+use Doctrine\Common\DataFixtures\Purger\ORMPurger;
 use Doctrine\ORM\EntityManager;
 use GuzzleHttp\Middleware;
 use PHPUnit\Framework\TestCase;
@@ -48,6 +53,7 @@ class ApiTestCase extends KernelTestCase
             "defaults" => [
                 "exceptions" => false
             ],
+            "enviroment" => "test"
         ]);
 
         self::bootKernel();
@@ -56,6 +62,7 @@ class ApiTestCase extends KernelTestCase
     public function setUp(): void
     {
         $this->client = self::$staticClient;
+        $this->purgeDatabase();
     }
 
 
@@ -67,6 +74,12 @@ class ApiTestCase extends KernelTestCase
     protected function tearDown(): void
     {
         //Overriding
+    }
+
+    private function purgeDatabase()
+    {
+        $purger = new ORMPurger($this->getService('doctrine')->getManager());
+        $purger->purge();
     }
 
 
@@ -190,6 +203,31 @@ class ApiTestCase extends KernelTestCase
         return $this->responseAsserter;
     }
 
+    protected function createToken(\App\Entity\User\User $user)
+    {
+        $apiToken = new ApiToken();
+        $apiToken->setCreatedBy($user);
+        $now = Carbon::instance(new \DateTime('now'));
+        $now->addMonths(1);
+        $expiredAt = $now->toDateTimeString();
+        $apiToken->setExpiredAt(new \DateTime($expiredAt));
+        $this->getEntityManager()->persist($apiToken);
+        $this->getEntityManager()->flush();
+        return $apiToken;
+    }
+
+    protected function createTask(array $data, User\User $user)
+    {
+        $task = new Task();
+        $task->setTitle($data['title']);
+        $task->setDescription($data['description']);
+        $task->setDueDate(new \DateTime($data['dueDate']));
+        $task->setCreatedBy($user);
+        $this->getEntityManager()->persist($task);
+        $this->getEntityManager()->flush();
+        return $task;
+    }
+
     protected function createUser(array $data)
     {
         $accessor = PropertyAccess::createPropertyAccessor();
@@ -205,6 +243,19 @@ class ApiTestCase extends KernelTestCase
         $this->getEntityManager()->flush();
 
         return $user;
+    }
+
+    protected function createTaskLog(Task $task, \App\Entity\User\User $user, $description)
+    {
+        $taskLog = new TaskLog();
+        $taskLog->setTask($task);
+        $taskLog->setCreatedBy($user);
+        $taskLog->setDescription($description);
+        $this->getEntityManager()->persist($taskLog);
+        $task->addLog($taskLog);
+        $this->getEntityManager()->persist($task);
+        $this->getEntityManager()->flush();
+        return $taskLog;
     }
 
 }

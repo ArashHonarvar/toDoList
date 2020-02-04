@@ -20,6 +20,8 @@
         <server name="KERNEL_CLASS" value="App\Kernel"/>
         <env name="TEST_BASE_URI" value="http://webserver"/>
         <env name="SYMFONY_DEPRECATIONS_HELPER" value="weak" />
+        <server name="APP_ENV" value="test" force="true"/>
+        <env name="DATABASE_URL" value="mysql://root:root@mysql:3306/toDoList-test"/>
     </php>
 
     <testsuites>

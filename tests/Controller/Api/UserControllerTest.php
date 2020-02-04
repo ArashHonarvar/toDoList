@@ -82,10 +82,18 @@ class UserControllerTest extends ApiTestCase
     public function testGenerateToken()
     {
 
+        $data = [
+            'username' => 'ArashHonarvar',
+            'email' => "arash.ho.13723@gmail.com",
+            'password' => '123'
+        ];
+
+        $this->createUser($data);
+
         try {
             $response = $this->client->post("/user/token/generate", [
                 'body' => json_encode([]),
-                'headers' => ['AUTH-USERNAME' => 'Arash', 'AUTH-PASSWORD' => '123']
+                'headers' => ['AUTH-USERNAME' => 'ArashHonarvar', 'AUTH-PASSWORD' => '123']
             ]);
         } catch (\Exception $e) {
             if ($e->hasResponse()) {
@@ -105,8 +113,19 @@ class UserControllerTest extends ApiTestCase
 
     public function testShowUser()
     {
+        $data = [
+            'username' => 'ArashHonarvar',
+            'email' => "arash.ho.13723@gmail.com",
+            'password' => '123'
+        ];
+
+        $user = $this->createUser($data);
+
+        $apiToken = $this->createToken($user);
+
+
         try {
-            $response = $this->client->get("/user/tepqy7z95c0w0c8skg84ggco80okw0", [
+            $response = $this->client->get("/user/" . $apiToken->getAccessToken(), [
                 'body' => json_encode([]),
             ]);
         } catch (\Exception $e) {
