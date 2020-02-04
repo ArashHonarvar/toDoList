@@ -54,10 +54,10 @@ class TaskController extends BaseController
     public function updateAction($taskId, Request $request)
     {
         $task = $this->getEntityManager()->getRepository(Task::class)->findNotDeleted($taskId);
-        $oldStatus = $task->getStatus();
         if (!$task) {
             throw $this->createNotFoundException("Task with id " . $taskId . " not found!");
         }
+        $oldStatus = $task->getStatus();
 
         $form = $this->createForm(TaskType::class, $task, ['default_status' => $task->getStatus()]);
         $this->processForm($request, $form);

@@ -182,12 +182,24 @@ class Task
         return $this;
     }
 
-    public function getDueDate(): ?\DateTimeInterface
+    /**
+     * Get dueDate
+     *
+     * @return \DateTime
+     */
+    public function getDueDate(): ?\DateTime
     {
         return $this->dueDate;
     }
 
-    public function setDueDate(\DateTimeInterface $dueDate): self
+    /**
+     * Set dueDate
+     *
+     * @param \DateTime $dueDate
+     *
+     * @return $this
+     */
+    public function setDueDate($dueDate): self
     {
         $this->dueDate = $dueDate;
 
