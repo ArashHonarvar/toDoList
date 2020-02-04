@@ -20,8 +20,8 @@ class UserRepository extends ServiceEntityRepository
     }
 
     /**
-     * //  * @return User
-     * //
+     * @param $credentials
+     * @return User|null
      */
     public function findUserByCredentials($credentials)
     {
@@ -31,11 +31,12 @@ class UserRepository extends ServiceEntityRepository
             ->where('tokens.accessToken = :accessToken')
             ->orWhere('tokens.refreshToken = :refreshToken')
             ->setParameter('accessToken', $credentials['access-token'])
-            ->setParameter('refreshToken', $credentials['refresh-token'])->getQuery()->setMaxResults(1)->getOneOrNullResult();
+            ->setParameter('refreshToken', $credentials['refresh-token'])
+            ->getQuery()->setMaxResults(1)->getOneOrNullResult();
     }
 
     /**
-     * //  * @return User
+     * //  * @return User|null
      * //
      */
     public function findUserByUsernameOrEmail($data)
@@ -48,32 +49,4 @@ class UserRepository extends ServiceEntityRepository
             ->setParameter('email', $data['email'])->getQuery()->setMaxResults(1)->getOneOrNullResult();
     }
 
-    // /**
-    //  * @return User[] Returns an array of User objects
-    //  */
-    /*
-    public function findByExampleField($value)
-    {
-        return $this->createQueryBuilder('u')
-            ->andWhere('u.exampleField = :val')
-            ->setParameter('val', $value)
-            ->orderBy('u.id', 'ASC')
-            ->setMaxResults(10)
-            ->getQuery()
-            ->getResult()
-        ;
-    }
-    */
-
-    /*
-    public function findOneBySomeField($value): ?User
-    {
-        return $this->createQueryBuilder('u')
-            ->andWhere('u.exampleField = :val')
-            ->setParameter('val', $value)
-            ->getQuery()
-            ->getOneOrNullResult()
-        ;
-    }
-    */
 }
