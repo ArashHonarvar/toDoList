@@ -22,16 +22,15 @@ class TaskControllerTest extends ApiTestCase
     public function testCreateTask()
     {
         $data = [
-            'title' => 'test new',
-            'description' => "desc new",
-            'status' => 'done',
+            'title' => 'tesk 1',
+            'description' => "desc",
             'dueDate' => '2020-03-03T00:00:00',
         ];
 
         try {
             $response = $this->client->post("/api/task/create", [
                 'body' => json_encode($data),
-                'headers' => ['AUTH-ACCESS-TOKEN' => '98xfgegqok4cwogcs4kwsgwgo4kgg8g']
+                'headers' => ['AUTH-ACCESS-TOKEN' => 'rot5clsypeogggcossw8s4ocw8s8k40']
             ]);
         } catch (\Exception $e) {
             if ($e->hasResponse()) {
@@ -52,16 +51,16 @@ class TaskControllerTest extends ApiTestCase
     public function testUpdateTask()
     {
         $data = [
-            'title' => 'test neww',
-            'description' => "desc neww",
+            'title' => 'tesk1',
+            'description' => "desc new",
             'status' => 'doing',
             'dueDate' => '2020-03-03T00:00:00',
         ];
 
         try {
-            $response = $this->client->put("/api/task/14", [
+            $response = $this->client->put("/api/task/1", [
                 'body' => json_encode($data),
-                'headers' => ['AUTH-ACCESS-TOKEN' => '98xfgegqok4cwogcs4kwsgwgo4kgg8g']
+                'headers' => ['AUTH-ACCESS-TOKEN' => 'rot5clsypeogggcossw8s4ocw8s8k40']
             ]);
         } catch (\Exception $e) {
             if ($e->hasResponse()) {
@@ -83,8 +82,8 @@ class TaskControllerTest extends ApiTestCase
     public function testChangeStatus()
     {
         try {
-            $response = $this->client->put("/api/task/14/change/status/ready", [
-                'headers' => ['AUTH-ACCESS-TOKEN' => '98xfgegqok4cwogcs4kwsgwgo4kgg8g']
+            $response = $this->client->put("/api/task/1/change/status/ready", [
+                'headers' => ['AUTH-ACCESS-TOKEN' => 'rot5clsypeogggcossw8s4ocw8s8k40']
             ]);
         } catch (\Exception $e) {
             if ($e->hasResponse()) {
@@ -100,7 +99,7 @@ class TaskControllerTest extends ApiTestCase
     {
         try {
             $response = $this->client->get("/api/task/list?status=ready", [
-                'headers' => ['AUTH-ACCESS-TOKEN' => '98xfgegqok4cwogcs4kwsgwgo4kgg8g']
+                'headers' => ['AUTH-ACCESS-TOKEN' => 'rot5clsypeogggcossw8s4ocw8s8k40']
             ]);
         } catch (\Exception $e) {
             if ($e->hasResponse()) {
@@ -109,8 +108,8 @@ class TaskControllerTest extends ApiTestCase
             }
         }
         $this->assertEquals(200, $response->getStatusCode());
-        $this->asserter()->assertResponsePropertyEquals($response, 'total', "7");
-        $this->asserter()->assertResponsePropertyEquals($response, '_embedded.items[0].id', "7");
+        $this->asserter()->assertResponsePropertyEquals($response, 'total', "2");
+        $this->asserter()->assertResponsePropertyEquals($response, '_embedded.items[1].id', "2");
     }
 
 

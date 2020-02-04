@@ -22,8 +22,8 @@ class UserControllerTest extends ApiTestCase
     public function testRegisterUser()
     {
         $data = [
-            'username' => 'Arash5',
-            'email' => "arash.honarvar.13725@gmail.com",
+            'username' => 'Arash',
+            'email' => "arash.honarvar.1372@gmail.com",
             'password' => '123'
         ];
 
@@ -51,23 +51,21 @@ class UserControllerTest extends ApiTestCase
     public function testUpdateUser()
     {
         $data = [
-            'username' => 'Arash3',
-            'email' => "arash.honarvar.13723@gmail.com",
+            'username' => 'ArashHonarvar',
+            'email' => "arash.ho.13723@gmail.com",
             'password' => '123'
         ];
 
         $this->createUser($data);
 
         $data = [
-            'username' => 'Arash4',
-            'email' => "arash.honarvar.13724@gmail.com",
-            'password' => '123'
+            'email' => "arash.hon.1372@gmail.com",
         ];
 
         try {
             $response = $this->client->put("/user/update", [
                 'body' => json_encode($data),
-                'headers' => ['AUTH-USERNAME' => 'Arash3', 'AUTH-PASSWORD' => '123']
+                'headers' => ['AUTH-USERNAME' => 'ArashHonarvar', 'AUTH-PASSWORD' => '123']
             ]);
         } catch (\Exception $e) {
             if ($e->hasResponse()) {
@@ -77,8 +75,8 @@ class UserControllerTest extends ApiTestCase
         }
 
         $this->assertEquals(200, $response->getStatusCode());
-        $this->asserter()->assertResponsePropertyEquals($response, 'username', "Arash3");
-        $this->asserter()->assertResponsePropertyEquals($response, 'email', 'arash.honarvar.13724@gmail.com');
+        $this->asserter()->assertResponsePropertyEquals($response, 'username', "ArashHonarvar");
+        $this->asserter()->assertResponsePropertyEquals($response, 'email', 'arash.hon.1372@gmail.com');
     }
 
     public function testGenerateToken()
@@ -87,7 +85,7 @@ class UserControllerTest extends ApiTestCase
         try {
             $response = $this->client->post("/user/token/generate", [
                 'body' => json_encode([]),
-                'headers' => ['AUTH-USERNAME' => 'Arash2', 'AUTH-PASSWORD' => '123']
+                'headers' => ['AUTH-USERNAME' => 'Arash', 'AUTH-PASSWORD' => '123']
             ]);
         } catch (\Exception $e) {
             if ($e->hasResponse()) {
@@ -108,7 +106,7 @@ class UserControllerTest extends ApiTestCase
     public function testShowUser()
     {
         try {
-            $response = $this->client->get("/user/j5wozkm4a680oo0wkoks0okwo8okccs", [
+            $response = $this->client->get("/user/tepqy7z95c0w0c8skg84ggco80okw0", [
                 'body' => json_encode([]),
             ]);
         } catch (\Exception $e) {
@@ -120,6 +118,11 @@ class UserControllerTest extends ApiTestCase
 
         $this->assertEquals(200, $response->getStatusCode());
         $this->asserter()->assertResponsePropertyDoesNotExist($response, 'id');
+        $this->asserter()->assertResponsePropertiesExist($response,
+            [
+                'email',
+                'username',
+            ]);
     }
 
     public function testInvalidJson()

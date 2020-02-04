@@ -76,7 +76,7 @@ class TaskController extends BaseController
     /**
      * @Route("/{taskId}/change/status/{status}" , name="api_task_change_status" , methods={"PUT"})
      */
-    public function changeStatusAction($taskId, $status, Request $request)
+    public function changeStatusAction(int $taskId, string $status, Request $request)
     {
         if (!in_array($status, [Task::STATUS_READY, Task::STATUS_DOING, Task::STATUS_DONE, Task::STATUS_EXPIRED])) {
             throw $this->createNotFoundException("Status " . $status . " is not valid!");
@@ -93,14 +93,18 @@ class TaskController extends BaseController
     }
 
     /**
-     * @Route("/{taskId}/logs" , name="api_task_logs_list" , methods={"GET"})
+     * @Route("/logs" , name="api_task_logs_list" , methods={"GET"})
      */
-    public function logsListAction($taskId, Request $request, CustomPagination $pagination)
+    public function logsListAction(Request $request, CustomPagination $pagination)
     {
+        $taskId = $request->query->get('taskId');
+        if (!$taskId) {
+            throw $this->createNotFoundException("Parameter taskId is missing!");
+        }
         $logsQuery = $this->getEntityManager()->getRepository(TaskLog::class)->findLogsByTaskId($taskId, true);
         $limit = $request->query->get('limit', $this->default_items_per_page);
         $page = $request->query->get('page', 1);
-        $paginatedData = $pagination->paginate($logsQuery, "api_task_logs_list", $request->query->all(), $page, $limit);
+        $paginatedData = $pagination->paginate($logsQuery, 'api_task_logs_list', $request->query->all(), $page, $limit);
         $response = $this->createApiResponse($paginatedData);
         return $response;
     }

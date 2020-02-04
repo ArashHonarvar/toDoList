@@ -22,7 +22,7 @@ class ApiTokenControllerTest extends ApiTestCase
     public function testShowToken()
     {
         try {
-            $response = $this->client->get("/token/14n2z8egic3k4wgsogss4k8og088044/");
+            $response = $this->client->get("/token/tepqy7z95c0w0c8skg84ggco80okw0/");
         } catch (\Exception $e) {
             if ($e->hasResponse()) {
                 $response = $e->getResponse();
@@ -39,7 +39,7 @@ class ApiTokenControllerTest extends ApiTestCase
     {
         try {
             $response = $this->client->post("/token/refresh", [
-                'headers' => ['AUTH-REFRESH-TOKEN' => '9hgi9a2s9iosow0kg4kg444swwcsksw']
+                'headers' => ['AUTH-REFRESH-TOKEN' => 'dmom6glaboggw0ksg8ok008skswkokg']
             ]);
         } catch (\Exception $e) {
             if ($e->hasResponse()) {
