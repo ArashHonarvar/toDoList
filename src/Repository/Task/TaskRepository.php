@@ -31,7 +31,9 @@ class TaskRepository extends ServiceEntityRepository
             if ($filter == Task::STATUS_EXPIRED) {
                 $queryBuilder->andWhere('task.dueDate < :now')->setParameter('now', new \DateTime('now'));
             } else {
-                $queryBuilder->andWhere('task.status LIKE :filter')->setParameter('filter', '%' . $filter . '%');
+                $queryBuilder->andWhere('task.status LIKE :filter AND task.dueDate >= :now')
+                    ->setParameter('filter', '%' . $filter . '%')
+                    ->setParameter('now', new \DateTime('now'));
             }
         }
         if ($isQuery == true) {

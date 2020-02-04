@@ -19,11 +19,11 @@ use Symfony\Component\PropertyAccess\PropertyAccess;
 class UserControllerTest extends ApiTestCase
 {
 
-    public function testRegister()
+    public function testRegisterUser()
     {
         $data = [
-            'username' => 'Arash2',
-            'email' => "arash.honarvar.13722@gmail.com",
+            'username' => 'Arash5',
+            'email' => "arash.honarvar.13725@gmail.com",
             'password' => '123'
         ];
 
@@ -34,7 +34,7 @@ class UserControllerTest extends ApiTestCase
         } catch (\Exception $e) {
             if ($e->hasResponse()) {
                 $response = $e->getResponse();
-                dump($this->debugResponse($response)); // Body
+                $this->debugResponse($response); // Body
             }
         }
 
@@ -48,7 +48,7 @@ class UserControllerTest extends ApiTestCase
             ]);
     }
 
-    public function testUpdate()
+    public function testUpdateUser()
     {
         $data = [
             'username' => 'Arash3',
@@ -72,7 +72,7 @@ class UserControllerTest extends ApiTestCase
         } catch (\Exception $e) {
             if ($e->hasResponse()) {
                 $response = $e->getResponse();
-                dump($this->debugResponse($response)); // Body
+                $this->debugResponse($response); // Body
             }
         }
 
@@ -92,7 +92,7 @@ class UserControllerTest extends ApiTestCase
         } catch (\Exception $e) {
             if ($e->hasResponse()) {
                 $response = $e->getResponse();
-                dump($this->debugResponse($response)); // Body
+                $this->debugResponse($response); // Body
             }
         }
 
@@ -105,7 +105,7 @@ class UserControllerTest extends ApiTestCase
             ]);
     }
 
-    public function testShow()
+    public function testShowUser()
     {
         try {
             $response = $this->client->get("/user/j5wozkm4a680oo0wkoks0okwo8okccs", [
@@ -114,7 +114,7 @@ class UserControllerTest extends ApiTestCase
         } catch (\Exception $e) {
             if ($e->hasResponse()) {
                 $response = $e->getResponse();
-                dump($this->debugResponse($response)); // Body
+                $this->debugResponse($response); // Body
             }
         }
 
@@ -141,7 +141,7 @@ EOF;
         } catch (\Exception $e) {
             if ($e->hasResponse()) {
                 $response = $e->getResponse();
-                dump($this->debugResponse($response)); // Body
+                $this->debugResponse($response); // Body
             }
         }
 

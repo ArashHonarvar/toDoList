@@ -32,6 +32,7 @@ class TaskController extends BaseController
     public function createAction(Request $request)
     {
         $task = new Task();
+        $task->setStatus(Task::STATUS_READY);
         $form = $this->createForm(TaskType::class, $task);
         $this->processForm($request, $form);
         if (!$form->isValid()) {
@@ -58,7 +59,7 @@ class TaskController extends BaseController
             throw $this->createNotFoundException("Task with id " . $taskId . " not found!");
         }
 
-        $form = $this->createForm(TaskType::class, $task);
+        $form = $this->createForm(TaskType::class, $task, ['default_status' => $task->getStatus()]);
         $this->processForm($request, $form);
         if (!$form->isValid()) {
             $this->throwApiProblemValidationException($form);
@@ -87,7 +88,7 @@ class TaskController extends BaseController
         $task->setStatus($status);
         $this->createTaskLog($task, $task->getCreatedBy(), "Status was changed to " . $status);
         $this->getEntityManager()->flush();
-        $response = $this->createApiResponse($task, 201);
+        $response = $this->createApiResponse($task);
         return $response;
     }
 

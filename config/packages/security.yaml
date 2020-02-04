@@ -1,4 +1,3 @@
-
 security:
   encoders:
     App\Entity\User\User:
@@ -16,6 +15,7 @@ security:
           - App\Security\TokenAuthenticator
     apiToken:
       pattern: ^/token/
+      anonymous: true
       guard:
         authenticators:
           - App\Security\TokenAuthenticator
@@ -29,7 +29,7 @@ security:
       pattern: ^/
       anonymous: true
   access_control:
-    - { path: '^/api', roles: ROLE_USER }
-    - { path: '^/token', roles: ROLE_USER }
+    - { path: '^/api', roles: IS_AUTHENTICATED_ANONYMOUSLY }
+    - { path: '^/token', roles: IS_AUTHENTICATED_ANONYMOUSLY }
     - { path: '^/user', roles: IS_AUTHENTICATED_ANONYMOUSLY }
     - { path: '^/', roles: IS_AUTHENTICATED_ANONYMOUSLY }

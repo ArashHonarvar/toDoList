@@ -33,6 +33,9 @@ class ApiTokenController extends BaseController
     public function showAction($accessToken, Request $request)
     {
         $apiToken = $this->getEntityManager()->getRepository(ApiToken::class)->findOneBy(['accessToken' => $accessToken]);
+        if (!$apiToken) {
+            throw $this->createNotFoundException("Token " . $accessToken . " is invalid!");
+        }
         $response = $this->createApiResponse($apiToken);
         return $response;
     }

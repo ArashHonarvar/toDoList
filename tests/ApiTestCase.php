@@ -128,7 +128,7 @@ class ApiTestCase extends KernelTestCase
 
                 $profilerUrl = $response->getHeader('X-Debug-Token-Link') ? $response->getHeader('X-Debug-Token-Link')[0] : null;
                 if ($profilerUrl) {
-                    $fullProfilerUrl = $response->getHeader('Host')[0] . $profilerUrl;
+                    $fullProfilerUrl = $profilerUrl;
                     $this->printDebug('');
                     $this->printDebug(sprintf(
                         'Profiler URL: <comment>%s</comment>',

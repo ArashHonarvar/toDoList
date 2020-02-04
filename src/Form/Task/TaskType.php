@@ -20,14 +20,16 @@ class TaskType extends AbstractType
         $builder
             ->add('title', TextType::class)
             ->add('description', TextareaType::class)
-            ->add('dueDate', DateTimeType::class , ['widget' => 'single_text'])
+            ->add('dueDate', DateTimeType::class, ['widget' => 'single_text'])
             ->add('status', ChoiceType::class, [
                 'choices' => [
                     "Ready" => Task::STATUS_READY,
                     "Doing" => Task::STATUS_DOING,
                     "Done" => Task::STATUS_DONE,
                     "Expired" => Task::STATUS_EXPIRED,
-                ]
+                ],
+                'required' => false,
+                'empty_data' => $options['default_status']
             ]);
     }
 
@@ -35,7 +37,8 @@ class TaskType extends AbstractType
     {
         $resolver->setDefaults([
             'data_class' => Task::class,
-            'csrf_protection' => false
+            'csrf_protection' => false,
+            'default_status' => Task::STATUS_READY
         ]);
     }
 
