@@ -1,2 +1,2 @@
 # toDoList
-To Do List project with Symfony Framework
+To-Do-List with Symfony Framework 4.4 & REST
